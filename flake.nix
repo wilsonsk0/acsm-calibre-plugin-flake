@@ -39,16 +39,18 @@
         default = self'.packages.calibre;
       };
     };
-    flake.homeModules.calibre = { self', ... }: {
-      home.packages = [
-        self'.packages.calibre
-      ];
+    flake = { self, ... }: {
+      homeModules.calibre = { pkgs, ... }: {
+        home.packages = [
+          self.packages.${pkgs.system}.calibre
+        ];
 
-      xdg.configFile."calibre/plugins/DeACSM.zip".source =
-        "${self'.packages.acsm-calibre-plugin}/acsm-calibre-plugin.zip";
+        xdg.configFile."calibre/plugins/DeACSM.zip".source =
+          "${self.packages.${pkgs.system}.acsm-calibre-plugin}/acsm-calibre-plugin.zip";
 
-      xdg.configFile."calibre/plugins/DeDRM.zip".source =
-        "${self'.packages.dedrm-calibre-plugin}/dedrm-calibre-plugin.zip";
+        xdg.configFile."calibre/plugins/DeDRM.zip".source =
+          "${self.packages.${pkgs.system}.dedrm-calibre-plugin}/dedrm-calibre-plugin.zip";
+      };
     };
   });
 }
