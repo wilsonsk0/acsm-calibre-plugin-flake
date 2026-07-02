@@ -1,0 +1,45 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1782723713,
+        "narHash": "sha256-oPXCU/SSUokcGaJREHibG1CBX3+s/W7orDWQOZDsEeQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "b5aa0fbd538984f6e3d201be0005b4463d8b09f8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "src": "src"
+      }
+    },
+    "src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1782582618,
+        "narHash": "sha256-CaxX2IcaxeXVuxdkx7Ozdf+Kw9xHPbAeSzFaoWIIAAw=",
+        "owner": "Leseratte10",
+        "repo": "acsm-calibre-plugin",
+        "rev": "336431fdce44be13514c5cc4e66e25da7ef3dc26",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Leseratte10",
+        "repo": "acsm-calibre-plugin",
+        "rev": "336431fdce44be13514c5cc4e66e25da7ef3dc26",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
