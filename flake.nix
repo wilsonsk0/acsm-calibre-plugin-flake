@@ -3,52 +3,52 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    src = {
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+    acsm-calibre-plugin = {
       url = "github:Leseratte10/acsm-calibre-plugin/336431fdce44be13514c5cc4e66e25da7ef3dc26";
+      flake = false;
+    };
+    dedrm-calibre-plugin = {
+      url = "github:noDRM/DeDRM_tools/7379b453199ed1ba91bf3a4ce4875d5ed3c309a9";
       flake = false;
     };
   };
 
-  outputs = { self, nixpkgs, src }: 
-  let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
-  in
+  outputs = inputs@{ flake-parts, ... }: flake-parts.lib.mkFlake { inherit inputs; } ({ ... }: 
   {
-    packages."${system}" = {
-      ascm-calibre-plugin = pkgs.stdenvNoCC.mkDerivation {
-        pname = "acsm-calibre-plugin";
-        version = "git";
-        inherit src;
-
-        nativeBuildInputs = with pkgs; [ 
-          bash
-          zip
-        ];
-
-        buildInputs = with pkgs; [
-          openssl
-          python3
-        ];
-
-        buildPhase = ''
-          runHook preBuild
-          
-          patchShebangs .
-          ./bundle_calibre_plugin.sh
-
-          runHook preBuild
-        '';
-        installPhase = ''
-          runHook preInstall
-
-          mkdir -p $out
-          cp calibre-plugin.zip $out/acsm-calibre-plugin.zip
-
-          runHook postInstall
-        '';
+    systems = [ "x86_64-linux" ];
+    perSystem = { pkgs, self', ... }: {
+      packages = {
+        acsm-calibre-plugin = pkgs.callPackage ./acsm-calibre-plugin.nix { src = inputs.acsm-calibre-plugin; };
+        dedrm-calibre-plugin = pkgs.callPackage ./dedrm-calibre-plugin.nix { src = inputs.dedrm-calibre-plugin; };
+        calibre = pkgs.symlinkJoin {
+          name = "calibre-wrapped";
+          paths = [ pkgs.calibre ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/calibre \
+              --prefix PYTHONPATH : ${pkgs.python3.pkgs.makePythonPath [
+                pkgs.python3.pkgs.oscrypto
+              ]} \
+              --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [ pkgs.openssl ]}
+          '';
+        };
+        default = self'.packages.calibre;
       };
-      default = self.packages."${system}".ascm-calibre-plugin;
     };
-  };
+    flake.homeModules.calibre = { self', ... }: {
+      home.packages = [
+        self'.packages.calibre
+      ];
+
+      xdg.configFile."calibre/plugins/DeACSM.zip".source =
+        "${self'.packages.acsm-calibre-plugin}/acsm-calibre-plugin.zip";
+
+      xdg.configFile."calibre/plugins/DeDRM.zip".source =
+        "${self'.packages.dedrm-calibre-plugin}/dedrm-calibre-plugin.zip";
+    };
+  });
 }
